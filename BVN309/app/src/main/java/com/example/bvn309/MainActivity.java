@@ -1,18 +1,17 @@
 package com.example.bvn309;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Stack;
-
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     TextView textView, textView1;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //
@@ -37,13 +36,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.equal).setOnClickListener(this);
         findViewById(R.id.C).setOnClickListener(this);
         findViewById(R.id.CE).setOnClickListener(this);
+        findViewById(R.id.delete).setOnClickListener(this);
         //
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View v){
         int id = v.getId();
-        switch (id) {
+        switch(id){
             case R.id.zero:
                 completingNumber("0");
                 break;
@@ -78,20 +78,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 completingNumber(".");
                 break;
             case R.id.plus:
-                update(textView.getText() + "+");
+                update("+");
                 break;
             case R.id.minus:
-                update(textView.getText() + "-");
+                update("-");
                 break;
             case R.id.multiply:
-                update(textView.getText() + "*");
+                update("*");
                 break;
             case R.id.divide:
-                update(textView.getText() + "/");
+                update("/");
                 break;
-            case R.id.equal:
-                textView.setText(String.format("%.4f", calculate(textView.getText().toString())));
-                textView1.setText("");
+            case R.id.equal://calculate
+                try{
+                    textView.setText(String.format("%.4f", calculate(textView1.getText() + "" + textView.getText())));
+                    textView1.setText("");
+                }catch(Exception e){
+                    System.out.println("error!");
+                    Intent intent = new Intent(MainActivity.this, Warning.class);
+                    startActivity(intent);
+                    textView.setText("0");
+                    e.printStackTrace();
+                    return;
+                }
+
                 break;
             case R.id.C:
                 textView.setText("0");
@@ -100,28 +110,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.CE:
                 textView.setText("0");
                 break;
+            case R.id.delete:
+                if(textView.getText().length()==1)
+                    textView.setText("0");
+                else{
+                    StringBuffer buffer = new StringBuffer();
+                    for(int i = 0; i < textView.getText().length() - 1; i++){
+                        buffer.append(textView.getText().charAt(i));
+                    }
+                    textView.setText(buffer.toString());
+                }
+                break;
 
         }
     }
 
-    public void update(String character) {
-        textView1.append(character);
+    public void update(String character){
+        textView1.append(textView.getText() + character);
         textView.setText("0");
     }
 
-    public void completingNumber(String typing) {
-        if(Float.parseFloat(textView.getText().toString())==0&&!typing.equals("."))
+    public void completingNumber(String typing){
+        if(textView.getText().length()==1&&Float.parseFloat(textView.getText().toString())==0&&!typing.equals("."))
             textView.setText("");
         textView.append(typing);
     }
 
-    public float calculate(String input) {
-        Stack<Float> number = new Stack<>();
-        Stack<String> method = new Stack<>();
-        float result = 0;
-
-        textView.setText(result + "");
-
-        return result;
+    public float calculate(String input){
+        return new Calculator(input).getResult();
     }
 }
